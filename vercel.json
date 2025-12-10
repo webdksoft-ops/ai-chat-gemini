@@ -1,16 +1,13 @@
 {
   "builds": [
-    // Next.js đã xử lý builds, nhưng nếu bạn cần dùng @vercel/node và @vercel/static 
-    // cho các file không phải Next.js, bạn có thể giữ lại.
     { "src": "api/chat.js", "use": "@vercel/node" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    // Hợp nhất quy tắc CORS vào tuyến đường API chat
     {
-      "src": "/api/chat", // <--- THÊM src VÀO ĐÂY
+      "src": "/api/chat",
       "dest": "/api/chat.js",
-      "methods": ["POST", "OPTIONS"], // Loại bỏ GET nếu không cần
+      "methods": ["POST", "OPTIONS"], 
       "headers": {
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Origin": "https://thuviensomnhongha.com",
@@ -18,8 +15,6 @@
         "Access-Control-Allow-Headers": "Content-Type"
       }
     },
-    
-    // Tuyến đường mặc định để phục vụ các file tĩnh từ public/
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
