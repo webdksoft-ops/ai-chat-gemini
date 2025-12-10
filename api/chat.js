@@ -1,5 +1,4 @@
-// pages/api/chat.js hoặc app/api/chat/route.js
-import { GoogleGenAI } from '@google/genai';
+const { GoogleGenAI } = require('@google/genai');
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import * as fs from 'fs';
 import * as path from 'path';
