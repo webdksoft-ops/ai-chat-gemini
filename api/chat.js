@@ -1,8 +1,9 @@
+// CHUYỂN HOÀN TOÀN TẤT CẢ CÁC GÓI SANG CÚ PHÁP REQUIRE (COMMONJS)
 const { GoogleGenAI } = require('@google/genai');
-import { TextToSpeechClient } from '@google-cloud/text-to-speech';
-import * as fs from 'fs';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+const { TextToSpeechClient } = require('@google-cloud/text-to-speech');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 // Tên miền widget của bạn.
 const ALLOWED_ORIGIN = 'https://thuviensomnhongha.com'; 
@@ -10,7 +11,8 @@ const ALLOWED_ORIGIN = 'https://thuviensomnhongha.com';
 // Khởi tạo Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // Khởi tạo Google Cloud TTS Client (Sử dụng xác thực mặc định của Google Cloud)
-const ttsClient = new TextToSpeechClient(); 
+// Lưu ý: Không cần thay đổi logic code bên dưới, chỉ cần thay đổi require/import
+const ttsClient = new TextToSpeechClient();
 
 // Cấu hình Giọng nói TTS
 const TTS_CONFIG = {
