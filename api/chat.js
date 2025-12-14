@@ -1,61 +1,94 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import textToSpeech from "@google-cloud/text-to-speech";
 
-// Tạo client TTS từ JSON nằm trong biến môi trường (phù hợp với Vercel)
-function createTTSClient() {
-  const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-
-  return new textToSpeech.TextToSpeechClient({
-    credentials,
-    projectId: credentials.project_id
-  });
-}
+// Tên miền widget của bạn
+const ALLOWED_ORIGIN = "https://thuviensomnhongha.com";
 
 export default async function handler(req, res) {
+  // =========================
+  // 1. CORS
+  // =========================
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method Not Allowed" });
+    return;
+  }
+
+  // =========================
+  // 2. Validate input
+  // =========================
+  const body = req.body;
+  if (!body || !body.message) {
+    res.status(400).json({ error: "Missing message in request body" });
+    return;
+  }
+
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+    // =========================
+    // 3. OpenAI Chat
+    // =========================
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
-    const { message, voice = "vi-VN-Wavenet-A" } = req.body;
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: body.message }],
+    });
 
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
+    const replyText = completion.choices[0].message.content;
 
-    // === GEMINI ===
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // =========================
+    // 4. Google Cloud TTS
+    // =========================
+    const credentials = JSON.parse(
+      Buffer.from(
+        process.env.GOOGLE_TTS_KEY_BASE64,
+        "base64"
+      ).toString("utf8")
+    );
 
-    const geminiResult = await model.generateContent(message);
-    const replyText = geminiResult.response.text();
+    const ttsClient = new textToSpeech.TextToSpeechClient({
+      credentials,
+    });
 
-    // === GOOGLE TTS ===
-    const ttsClient = createTTSClient();
-
-    const ttsRequest = {
+    const [ttsResponse] = await ttsClient.synthesizeSpeech({
       input: { text: replyText },
       voice: {
         languageCode: "vi-VN",
-        name: voice
+        name: "vi-VN-Wavenet-A", // giọng Việt rất rõ
       },
       audioConfig: {
-        audioEncoding: "MP3"
-      }
-    };
-
-    const [ttsResponse] = await ttsClient.synthesizeSpeech(ttsRequest);
-
-    // Trả về base64 audio
-    const audioBase64 = ttsResponse.audioContent.toString("base64");
-
-    return res.status(200).json({
-      text: replyText,
-      audio: audioBase64
+        audioEncoding: "MP3",
+        speakingRate: 1.0,
+        pitch: 0,
+      },
     });
 
+    // =========================
+    // 5. Response
+    // =========================
+    res.status(200).json({
+      reply: replyText,
+      audioBase64: ttsResponse.audioContent.toString("base64"),
+    });
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: error.message });
+    console.error("Chat API Error:", error);
+    res.status(500).json({
+      error: "Lỗi nội bộ server",
+      details:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
+    });
   }
 }
