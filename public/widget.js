@@ -1,4 +1,4 @@
-function () {
+(function () {
   const scriptTag = document.currentScript;
   const backendUrl =
     scriptTag && scriptTag.dataset && scriptTag.dataset.backendUrl;
