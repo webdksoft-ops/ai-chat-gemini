@@ -1,24 +1,24 @@
 {
-  "name": "ai-chat-gemini",
+  "name": "ai-chat-widget",
   "version": "1.0.0",
   "private": true,
   "description": "AI Chat Widget deployed on Vercel using Next.js API Routes.",
+  
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
-  "type": "module",
+  
   "dependencies": {
-    "next": "14.2.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "next": "14.2.3",         
+    "react": "18.3.1",        
+    "react-dom": "18.3.1",    
     "openai": "^4.27.0",
-    "@google/genai": "^0.7.0",
-    "@google-cloud/text-to-speech": "^5.3.0",
-    "uuid": "^9.0.1"
+    "@google-cloud/text-to-speech": "^5.2.0"
   },
+  
   "devDependencies": {
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3"
